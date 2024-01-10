@@ -8,6 +8,9 @@ spring:
     username: 'postgres'
     url: jdbc:postgresql://localhost:5432/order-service
     password: 'postgres'
+  cloud:
+    discovery:
+      enabled: true
 
   jpa:
     properties:
@@ -25,6 +28,8 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
     enabled: true
+  instance:
+    hostname: order-service
 
 application-properties:
-  inventory-url: "http://localhost:8082/api/inventory"
+  inventory-url: "http://inventory-service:8082"
