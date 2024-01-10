@@ -40,12 +40,14 @@ public class OrderService {
 
         //sipariş verirken inventory den stock ta var mı yok mu kontrol eder
         List<InventoryResponse> inventoryResponseList = inventoryFeignClient.isInStock(skuCodes);
-        boolean allProducts = inventoryResponseList.stream().allMatch(InventoryResponse::isInStock);
+        boolean allProducts = !inventoryResponseList.isEmpty() &&
+                inventoryResponseList.stream().allMatch(InventoryResponse::isInStock);
 
 
         if (allProducts) {
             orderRepository.save(order);
         } else {
+            //todo:generic log mekanizması olması lazım
             throw new IllegalArgumentException("Product is not stock, please try again later!");
         }
 
