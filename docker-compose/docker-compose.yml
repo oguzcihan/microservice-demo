@@ -1,34 +1,41 @@
 name: microservices-demo
 services:
   postgres:
-    container_name: postgres_db
+    container_name: postgres-db
     image: postgres
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       PGDATA: /data/postgres
-    volumes:
-      - /data/postgres
     ports:
       - "5432:5432"
-#    networks:
-#      driver: bridge
     restart: unless-stopped
 
-  mongodb:
-    container_name: mongodb
-    image: mongo:6-jammy
+
+  keycloak-postgres:
+    container_name: keycloak-postgres
+    image: postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak1
+      PGDATA: /data/keycloak-postgres
     ports:
-      - '27017:27017'
-    volumes:
-      - /data/db
+      - "5434:5432"
+    restart: unless-stopped
 
   keycloak:
     container_name: keycloak
-    image: quay.io/keycloak/keycloak:22.0.3
-    command: ['start-dev', "--import-realm"]
+    image: quay.io/keycloak/keycloak:18.0.0
+    command: [ 'start-dev', "--import-realm" ]
     environment:
+      KC_DB_VENDOR: POSTGRES
+      KC_DB_ADDR: postgres
+      KC_DB_DATABASE: keycloak
+      KC_DB_USER: keycloak
+      KC_DB_SCHEMA: public
+      KC_DB_PASSWORD: keycloak1
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
 
@@ -38,5 +45,24 @@ services:
     ports:
       - 8181:8080
     depends_on:
-      - postgres
+      - keycloak-postgres
 
+
+  mongodb:
+    container_name: mongodb
+    image: mongo:6-jammy
+    ports:
+      - '27017:27017'
+    volumes:
+      - /data/db
+
+  ## Zipkin
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+volumes:
+  postgres_data:
+    driver: local

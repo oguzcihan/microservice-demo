@@ -1,7 +1,7 @@
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka:password@localhost:8761/eureka
     fetch-registry: true
     register-with-eureka: true
     enabled: true
@@ -15,6 +15,12 @@ logging:
 spring:
   application:
     name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8181/realms/spring-boot-microservices-realm
+
   cloud:
     gateway:
       routes:
@@ -43,9 +49,12 @@ spring:
           uri: http://localhost:8761
           predicates:
             - Path=/eureka/**
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8181/realms/microservices-demo-realm
 
+#
+#  zipkin:
+#    base-url: http://localhost:9411
+#    enabled: true
+#  sleuth:
+#    sampler:
+#      probability: 1.0
+#    enabled: true

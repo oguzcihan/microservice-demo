@@ -24,7 +24,7 @@ public class OrderService {
     private final WebClient.Builder webClientBuilder;
     private final InventoryFeignClient inventoryFeignClient;
 
-    public void placeOrder(OrderRequest orderRequest) {
+    public String placeOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setOrderNumber(UUID.randomUUID().toString());
 
@@ -46,6 +46,7 @@ public class OrderService {
 
         if (allProducts) {
             orderRepository.save(order);
+            return "Order placed successfully";
         } else {
             //todo:generic log mekanizması olması lazım
             throw new IllegalArgumentException("Product is not stock, please try again later!");

@@ -4,6 +4,7 @@ server:
 spring:
   application:
     name: order-service
+
   datasource:
     username: 'postgres'
     url: jdbc:postgresql://localhost:5432/order-service
@@ -24,7 +25,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka:password@localhost:8761/eureka
     fetch-registry: true
     register-with-eureka: true
     enabled: true
@@ -33,3 +34,58 @@ eureka:
 
 application-properties:
   inventory-url: "http://inventory-service:8082"
+
+
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true #uygulamadaki circuit breaker ların health kontrolünü yapar
+  endpoints.web.exposure.include: "*"
+  #  endpoints:
+  #    web:
+  #      exposure:
+  #        include: * #tüm endpointlerin outside edilmesini sağlar * tüm endpointler demektir
+  endpoint:
+    health:
+      show-details: always #endpointlerin health bilgilerini gösterir. always her zaman göstereceğini ifade eder
+      enabled: true
+    timelimiterevents:
+      enabled: true
+
+# Resilience4j Properties
+resilience4j:
+  circuitbreaker:
+    instances:
+      inventory:
+        registerHealthIndicator: true #health bilgilerini register eder
+        event-consumer-buffer-size: 10 #boyutu 10 olan bir buffer olusturur
+        slidingWindowType: COUNT_BASED #circuit breaker'ın başarısız olduğu durumları sayar. sliding window tipini belirler
+        slidingWindowSize: 5 #COUNT_BASED ile 5 yapar
+        failureRateThreshold: 50 #circuit breaker'ın basarısızlık oranını belirler. yüzde 50 üzerinde basarısız olur
+        waitDurationInOpenState: 5s #open durumunda bekleme suresini belirler
+        permittedNumberOfCallsInHalfOpenState: 3 #half open durumunda max call sayısını belirler
+        automaticTransitionFromOpenToHalfOpenEnabled: true #open durumunda half open durumuna gecmek için otomatik olarak gecis yapar
+
+  # Resilience4J Timeout Properties
+  timelimiter:
+    instances:
+      inventory:
+        timeout-duration: 3s #timeout süresini belirler. yani işlemin belirli süre içinde tamamlanması gerekir
+
+  # Resilience4J Retry Properties
+  retry:
+    instances:
+      inventory:
+        max-attempts: 3 #max. 3 kere tekrar edilmesi gerekiyor
+        wait-duration: 5s #her tekrar edildikten sonra 5 saniye beklemesi gerekiyor
+
+
+
+#  zipkin:
+#    base-url: http://localhost:9411
+#    enabled: true
+#  sleuth:
+#    sampler:
+#      probability: 1.0
+#    enabled: true
